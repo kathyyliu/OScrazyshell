@@ -7,6 +7,7 @@
 #include<sys/wait.h>
 #include<readline/readline.h>
 #include<readline/history.h>
+#include <fcntl.h>
 
 #define MAXCOM 1000 // max number of letters to be supported
 #define MAXLIST 100 // max number of commands to be supported
@@ -147,8 +148,8 @@ void openHelp()
 	return;
 }
 
-char* face() {
-    return ("%%%&&&&&&&%#(/***/(((((///((((((((////(((((((#(#######((((((((((((((((((((((////((##(/**/#%%#(/(%%&%\n"
+void face() {
+char* boscoe = "%%%&&&&&&&%#(/***/(((((///((((((((////(((((((#(#######((((((((((((((((((((((////((##(/**/#%%#(/(%%&%\n"
 "%#####%##((((/****/(((((((((((((((//(((((##((#((((/(###(((((((((((((((((((((////(###(/**/###(/(#%%%%\n"
 "#(((/((###((/**,,,*/(###((((((((((///(##((/**,**,//*,*,*/(%&%##(((((((((((((////(#%##/*******,/(#%%%\n"
 "#(((#%%&&%#(////***/(###(//////////##(/*(%(*/*,.,**,,,,,*/&%(#&@#(#((((((((/////(#%%#(*,****,,*(#%%#\n"
@@ -183,14 +184,29 @@ char* face() {
 "(((############(((##/.             .,*.,,***//((((///////((((((/****,****,******/(*     ....,*(&@@@@\n"
 "((((((((#(/*,.                ..,,***//*//**//((((((((((((((/(* ..,.,,*/******,/(         ........,,\n"
 "##(((/                    .*,********,.(*/((##(//#(((####((/.,   ......,,,.,,..,                   .\n"
-"(((*                      /*//**//.     .(((####((((((*&#*/,,.   (#/. .,..,,. .                     \n");
+"(((*                      /*//**//.     .(((####((((((*&#*/,,.   (#/. .,..,,. .                     \n";
+
+write(1, boscoe, strlen(boscoe));
+}
+
+
+int filewrite(char* filename, char* msg) {
+	int fd = open(filename, O_WRONLY | O_APPEND | O_CREAT, 00000);
+	if (fd == -1) {
+		return 0;
+	}
+	if (write(fd, msg, strlen(msg)) != strlen(msg)) {
+        write(2,"There was an error writing to the file\n", strlen("There was an error writing to the file\n")); 
+        return 0;
+    }
+	return 1;
 }
 
 
 // Function to execute builtin commands
 int ownCmdHandler(char** parsed)
 {
-	int NoOfOwnCmds = 6, i, switchOwnArg = 0;
+	int NoOfOwnCmds = 7, i, switchOwnArg = 0;
 	char* ListOfOwnCmds[NoOfOwnCmds];
 	char* username;
 
@@ -198,8 +214,10 @@ int ownCmdHandler(char** parsed)
 	ListOfOwnCmds[1] = "cd";
 	ListOfOwnCmds[2] = "help";
 	ListOfOwnCmds[3] = "hello";
-	ListOfOwnCmds[4] = "pparent";
-	ListOfOwnCmds[5] = "boscoe";
+	ListOfOwnCmds[4] = "gparent";	// chdir
+	ListOfOwnCmds[5] = "boscoe";	// write
+	ListOfOwnCmds[6] = "fwrite";	// open, write
+	//TODO: nthparent
 
 	for (i = 0; i < NoOfOwnCmds; i++) {
 		if (strcmp(parsed[0], ListOfOwnCmds[i]) == 0) {
@@ -226,11 +244,14 @@ int ownCmdHandler(char** parsed)
 			username);
 		return 1;
 	case 5:
-		chdir("../..");
-		return 1;
+		if (chdir("../..") == 0) {
+			return 1;
+		}
 	case 6:
-		write(1, face(), strlen(face()));
+		face();
 		return 1;
+	case 7:
+		return filewrite(parsed[1], parsed[2]);
 	default:
 		break;
 	}
@@ -304,8 +325,9 @@ int main()
 		// print shell line
 		printDir();
 		// take input
-		if (takeInput(inputString))
-			continue;
+		// if (takeInput(inputString))
+		// 	continue;
+		strcpy(inputString, "filewrite cool.txt hi");
 		// process
 		execFlag = processString(inputString,
 		parsedArgs, parsedArgsPiped);
