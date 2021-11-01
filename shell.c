@@ -199,12 +199,13 @@ void face()
 }
 
 // Create a file with the given filename and write 'msg' into it
-int filewrite(char* filename, char* msg)
+int filewrite(char* filename)
 {
     int fd = open(filename, O_WRONLY | O_APPEND | O_CREAT, 00000);
     if (fd == -1) {
         return 0;
     }
+	char* msg = "A page is a fixed-size contiguous block of a logical address space identified by a single number, the page number.\0";
     if (write(fd, msg, strlen(msg)) != strlen(msg)) {
         write(2,"There was an error writing to the file\n", strlen("There was an error writing to the file\n"));
         return 0;
@@ -314,7 +315,7 @@ int ownCmdHandler(char** parsed)
             face();
             return 1;
         case 7:
-            return filewrite(parsed[1], parsed[2]);
+            return filewrite(parsed[1]);
         case 8:
 			strcpy(x, "\0");
             chdir(recurseDir(x));
