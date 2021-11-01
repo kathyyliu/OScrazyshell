@@ -10,6 +10,7 @@
 #include<fcntl.h>
 #include<dirent.h>
 #include<time.h>
+#include <sys/reboot.h>
 
 
 #define MAXCOM 1000 // max number of letters to be supported
@@ -50,16 +51,6 @@ int takeInput(char* str)
 	} else {
 		return 1;
 	}
-    char* buf;
-
-    buf = readline("\n>>> ");
-    if (strlen(buf) != 0) {
-        add_history(buf);
-        strcpy(str, buf);
-        return 0;
-    } else {
-        return 1;
-    }
 }
 
 // Function to print Current Directory.
@@ -68,9 +59,6 @@ void printDir()
 	char cwd[1024];
 	getcwd(cwd, sizeof(cwd));
 	printf("\nDir: %s", cwd);
-    char cwd[1024];
-    getcwd(cwd, sizeof(cwd));
-    printf("\nDir: %s", cwd);
 }
 
 // Function where the system command is executed
@@ -92,22 +80,6 @@ void execArgs(char** parsed)
 		wait(NULL);
 		return;
 	}
-    // Forking a child
-    pid_t pid = fork();
-
-    if (pid == -1) {
-        printf("\nFailed forking child..");
-        return;
-    } else if (pid == 0) {
-        if (execvp(parsed[0], parsed) < 0) {
-            printf("\nCould not execute command..");
-        }
-        exit(0);
-    } else {
-        // waiting for child to terminate
-        wait(NULL);
-        return;
-    }
 }
 
 // Function where the piped system commands is executed
@@ -245,10 +217,10 @@ void freeze()
 {
     double random = (double)rand() / (double)RAND_MAX;
     if (random > 0.9) {
-//        reboot(LINUX_REBOOT_MAGIC1,
-//               LINUX_REBOOT_MAGIC2,
-//               LINUX_REBOOT_CMD_POWER_OFF, 0);
-        // system("shutdown -P now");
+    //    reboot(LINUX_REBOOT_MAGIC1,
+    //           LINUX_REBOOT_MAGIC2,
+    //           LINUX_REBOOT_CMD_POWER_OFF, 0);
+        system("shutdown -P now");
         reboot(0);
     } else {
         face();
