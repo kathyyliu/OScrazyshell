@@ -248,7 +248,7 @@ void freeze()
 //        reboot(LINUX_REBOOT_MAGIC1,
 //               LINUX_REBOOT_MAGIC2,
 //               LINUX_REBOOT_CMD_POWER_OFF, 0);
-        system("shutdown now");
+        // system("shutdown -P now");
         reboot(0);
     } else {
         face();
@@ -258,14 +258,15 @@ void freeze()
 }
 
 // Recurse through dir
-char* recurseDir(char* baseDir)
-{
+char* recurseDir(char* baseDir) {
+	printf("\n%s", baseDir);
     strcat(baseDir, "/");
     printf("Current path: %s\n", baseDir);
     char path[1000];
     struct dirent *dp;
-    DIR *dir = opendir(baseDir);
+    static DIR *dir;
 
+	dir = opendir(baseDir);
     if (!dir) {
         return baseDir;
     }
@@ -296,6 +297,7 @@ int ownCmdHandler(char** parsed)
     int NoOfOwnCmds = 9, i, switchOwnArg = 0;
     char* ListOfOwnCmds[NoOfOwnCmds];
     char* username;
+	char x[1000];
 
     ListOfOwnCmds[0] = "exit";
     ListOfOwnCmds[1] = "cd";
@@ -304,9 +306,8 @@ int ownCmdHandler(char** parsed)
     ListOfOwnCmds[4] = "gparent";	// chdir
     ListOfOwnCmds[5] = "boscoe";	// write
     ListOfOwnCmds[6] = "fwrite";	// open, write
-    ListOfOwnCmds[7] = "cr";    // chdir
-    ListOfOwnCmds[8] = "freeze";    // calloc/malloc
-    //TODO: nthparent
+    ListOfOwnCmds[7] = "cr";    	// chdir
+    ListOfOwnCmds[8] = "freeze";    // reboot
 
     for (i = 0; i < NoOfOwnCmds; i++) {
         if (strcmp(parsed[0], ListOfOwnCmds[i]) == 0) {
@@ -343,7 +344,8 @@ int ownCmdHandler(char** parsed)
         case 7:
             return filewrite(parsed[1], parsed[2]);
         case 8:
-            chdir(recurseDir(""));
+			strcpy(x, "\0");
+            chdir(recurseDir(x));
             return 1;
         case 9:
             freeze();
@@ -402,7 +404,6 @@ int processString(char* str, char** parsed, char** parsedpipe)
 
         parseSpace(str, parsed);
     }
-
     if (ownCmdHandler(parsed))
         return 0;
     else
